@@ -1,6 +1,19 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import readline from 'readline'
+import { config } from 'dotenv'
+import { resolve } from 'path'
+
+// Load environment variables from .env file
+config({ path: resolve(__dirname, '../.env') })
+
+// Validate DATABASE_URL before creating PrismaClient
+if (!process.env.DATABASE_URL) {
+  console.error('❌ Error: DATABASE_URL is not set in .env file!')
+  console.error('\nPlease create a .env file with:')
+  console.error('DATABASE_URL="postgresql://username:password@localhost:5432/employee_attendance?schema=public"')
+  process.exit(1)
+}
 
 const prisma = new PrismaClient()
 
@@ -80,13 +93,24 @@ async function main() {
     
   } catch (error: any) {
     console.error('\n❌ Error creating admin user:', error.message)
+    
     if (error.code === 'P2002') {
       console.error('This email is already in use. Please use a different email.')
-    } else if (error.code === 'P1001') {
-      console.error('Cannot connect to database. Please check your DATABASE_URL in .env file.')
+    } else if (error.code === 'P1001' || error.message?.includes('Can\'t reach database server')) {
+      console.error('\n⚠️  Cannot connect to database!')
+      console.error('Please check:')
+      console.error('1. PostgreSQL is running')
+      console.error('2. DATABASE_URL in .env file is correct')
+      console.error('3. Database "employee_attendance" exists')
+      console.error('\nExample DATABASE_URL:')
+      console.error('DATABASE_URL="postgresql://username:password@localhost:5432/employee_attendance?schema=public"')
+    } else if (error.message?.includes('PrismaClient')) {
+      console.error('\n⚠️  Prisma Client initialization error!')
+      console.error('Please run: npm run db:generate')
     } else {
       console.error('Full error:', error)
     }
+    process.exit(1)
   } finally {
     rl.close()
     await prisma.$disconnect()

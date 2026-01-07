@@ -1,6 +1,15 @@
 // JavaScript version of seed-admin script (fallback if TypeScript doesn't work)
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') })
 const { PrismaClient } = require('@prisma/client')
 const bcrypt = require('bcryptjs')
+
+// Validate DATABASE_URL before creating PrismaClient
+if (!process.env.DATABASE_URL) {
+  console.error('❌ Error: DATABASE_URL is not set in .env file!')
+  console.error('\nPlease create a .env file with:')
+  console.error('DATABASE_URL="postgresql://username:password@localhost:5432/employee_attendance?schema=public"')
+  process.exit(1)
+}
 
 const prisma = new PrismaClient()
 
