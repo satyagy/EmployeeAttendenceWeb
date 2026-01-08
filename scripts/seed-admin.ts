@@ -1,11 +1,9 @@
-import { config } from 'dotenv'
-import { resolve } from 'path'
-
 import { prisma } from '../lib/prisma';
 import bcrypt from 'bcryptjs';
+import { config } from 'dotenv';
+import { resolve } from 'path';
 
-// Load environment variables from .env file
-config({ path: resolve(__dirname, '../.env') })
+config({ path: resolve(__dirname, '../.env') });
 
 // Validate DATABASE_URL before creating PrismaClient
 if (!process.env.DATABASE_URL) {
@@ -14,9 +12,6 @@ if (!process.env.DATABASE_URL) {
   console.error('DATABASE_URL="postgresql://username:password@localhost:5432/employee_attendance?schema=public"')
   process.exit(1)
 }
-
-const prisma = new PrismaClient()
-
 async function main() {
   const email = process.env.ADMIN_EMAIL || 'admin@example.com'
   const password = process.env.ADMIN_PASSWORD || 'admin123'
